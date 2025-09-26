@@ -1,35 +1,36 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, TrendingUp, Shield, Target } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { apiService } from '../services/api';
+import { PerformanceAnalytics, RiskMetrics, BenchmarkComparison, PortfolioAllocation } from '../types/api';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export const Analytics: React.FC = () => {
-    const { data: performance, isLoading: performanceLoading } = useQuery(
-        'performance-analytics',
-        () => apiService.getPerformanceAnalytics('user1', 30),
-        { refetchInterval: 60000 }
-    );
+    const { data: performance, isLoading: performanceLoading } = useQuery<PerformanceAnalytics>({
+        queryKey: ['performance-analytics'],
+        queryFn: () => apiService.getPerformanceAnalytics('user1', 30),
+        refetchInterval: 60000
+    });
 
-    const { data: riskMetrics, isLoading: riskLoading } = useQuery(
-        'risk-metrics',
-        () => apiService.getRiskMetrics('user1', 30),
-        { refetchInterval: 60000 }
-    );
+    const { data: riskMetrics, isLoading: riskLoading } = useQuery<RiskMetrics>({
+        queryKey: ['risk-metrics'],
+        queryFn: () => apiService.getRiskMetrics('user1', 30),
+        refetchInterval: 60000
+    });
 
-    const { data: benchmark, isLoading: benchmarkLoading } = useQuery(
-        'benchmark-comparison',
-        () => apiService.getBenchmarkComparison('user1', 'SPY', 30),
-        { refetchInterval: 300000 }
-    );
+    const { data: benchmark, isLoading: benchmarkLoading } = useQuery<BenchmarkComparison>({
+        queryKey: ['benchmark-comparison'],
+        queryFn: () => apiService.getBenchmarkComparison('user1', 'SPY', 30),
+        refetchInterval: 300000
+    });
 
-    const { data: allocation, isLoading: allocationLoading } = useQuery(
-        'portfolio-allocation',
-        () => apiService.getPortfolioAllocation('user1'),
-        { refetchInterval: 300000 }
-    );
+    const { data: allocation, isLoading: allocationLoading } = useQuery<PortfolioAllocation>({
+        queryKey: ['portfolio-allocation'],
+        queryFn: () => apiService.getPortfolioAllocation('user1'),
+        refetchInterval: 300000
+    });
 
     if (performanceLoading || riskLoading || benchmarkLoading || allocationLoading) {
         return (
@@ -50,7 +51,7 @@ export const Analytics: React.FC = () => {
         { date: '2024-01-07', portfolio: 105000, benchmark: 101200 },
     ];
 
-    const allocationData = allocation?.stocks?.map((stock: any) => ({
+    const allocationData = allocation?.allocation?.stocks?.map((stock: any) => ({
         name: stock.symbol,
         value: stock.value,
         percentage: stock.percentage

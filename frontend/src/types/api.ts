@@ -186,3 +186,42 @@ export interface CashBalance {
     user_id: string;
     last_updated: string;
 }
+
+export interface RiskMetrics {
+    risk_level: 'low' | 'medium' | 'high';
+    risk_score: number;
+    var_95: number;
+    volatility: number;
+    max_drawdown: number;
+}
+
+export interface BenchmarkComparison {
+    portfolio: {
+        return: number;
+        sharpe_ratio: number;
+        volatility: number;
+    };
+    benchmark: {
+        return: number;
+        sharpe_ratio: number;
+        volatility: number;
+    };
+    comparison: {
+        excess_return: number;
+        sharpe_difference: number;
+        alpha: number;
+        beta: number;
+    };
+}
+
+export interface PerformanceAnalytics {
+    total_return: number;
+    annualized_return: number;
+    volatility: number;
+    sharpe_ratio: number;
+    max_drawdown: number;
+    win_rate: number;
+    avg_win: number;
+    avg_loss: number;
+    profit_factor: number;
+}
