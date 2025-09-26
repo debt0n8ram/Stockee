@@ -70,18 +70,18 @@ export const Analytics: React.FC = () => {
         const startValue = 100000;
         let portfolioValue = startValue;
         let benchmarkValue = startValue;
-        
+
         for (let i = 0; i < days; i++) {
             const date = new Date();
             date.setDate(date.getDate() - (days - i));
-            
+
             // Generate realistic price movements
             const portfolioChange = (Math.random() - 0.5) * 0.04; // ±2% daily change
             const benchmarkChange = (Math.random() - 0.5) * 0.02; // ±1% daily change
-            
+
             portfolioValue *= (1 + portfolioChange);
             benchmarkValue *= (1 + benchmarkChange);
-            
+
             data.push({
                 date: date.toISOString().split('T')[0],
                 portfolio: Math.round(portfolioValue),
@@ -97,7 +97,7 @@ export const Analytics: React.FC = () => {
     };
 
     const performanceData = generatePerformanceData();
-    
+
     // Generate allocation data with fallback
     const allocationData = React.useMemo(() => {
         if (allocation?.allocation?.stocks && allocation.allocation.stocks.length > 0) {
@@ -107,7 +107,7 @@ export const Analytics: React.FC = () => {
                 percentage: stock.percentage || 0
             }));
         }
-        
+
         // Fallback mock data for demonstration
         return [
             { name: 'AAPL', value: 25000, percentage: 25 },
@@ -230,8 +230,8 @@ export const Analytics: React.FC = () => {
                                         key={type}
                                         onClick={() => setChartType(type as any)}
                                         className={`p-2 rounded-md transition-colors ${chartType === type
-                                                ? 'bg-blue-100 text-blue-600'
-                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-blue-100 text-blue-600'
+                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                             }`}
                                         title={`${type.charAt(0).toUpperCase() + type.slice(1)} Chart`}
                                     >
@@ -401,7 +401,7 @@ export const Analytics: React.FC = () => {
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip 
+                            <Tooltip
                                 formatter={(value: any) => [`$${value.toLocaleString()}`, 'Value']}
                                 labelFormatter={(label, payload) => {
                                     if (payload && payload[0]) {

@@ -10,17 +10,17 @@ export const AIAssistant: React.FC = () => {
     const [sessionId, setSessionId] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { data: insights } = useQuery(
-        'portfolio-insights',
-        () => apiService.getPortfolioInsights('user1'),
-        { refetchInterval: 300000 } // 5 minutes
-    );
+    const { data: insights } = useQuery({
+        queryKey: ['portfolio-insights'],
+        queryFn: () => apiService.getPortfolioInsights('user1'),
+        refetchInterval: 300000 // 5 minutes
+    });
 
-    const { data: predictions } = useQuery(
-        'price-predictions',
-        () => apiService.getPricePredictions('AAPL', 7),
-        { refetchInterval: 600000 } // 10 minutes
-    );
+    const { data: predictions } = useQuery({
+        queryKey: ['price-predictions'],
+        queryFn: () => apiService.getPricePredictions('AAPL', 7),
+        refetchInterval: 600000 // 10 minutes
+    });
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -226,7 +226,7 @@ export const AIAssistant: React.FC = () => {
                     )}
 
                     {/* Price Predictions */}
-                    {predictions && predictions.length > 0 && (
+                    {predictions && Array.isArray(predictions) && predictions.length > 0 && (
                         <div className="card">
                             <h3 className="text-lg font-medium text-gray-900 mb-4">AI Predictions</h3>
                             <div className="space-y-2">

@@ -13,11 +13,15 @@ export const AIPredictions: React.FC = () => {
     const { data: predictions, isLoading: predictionsLoading, refetch: refetchPredictions } = useQuery({
         queryKey: ['ai-predictions', selectedSymbol, daysAhead],
         queryFn: () => apiService.getAIPredictions(selectedSymbol, daysAhead),
-        enabled: !!selectedSymbol,
-        onError: (error: any) => {
-            toast.error(error.response?.data?.detail || 'Failed to get predictions');
-        }
+        enabled: !!selectedSymbol
     });
+
+    // Handle prediction errors
+    React.useEffect(() => {
+        if (predictions && 'error' in predictions) {
+            toast.error('Failed to get predictions');
+        }
+    }, [predictions]);
 
     // Get prediction history
     const { data: history, isLoading: historyLoading } = useQuery({
@@ -129,7 +133,7 @@ export const AIPredictions: React.FC = () => {
                                 <span className="text-lg text-gray-600">Generating AI predictions...</span>
                             </div>
                         </div>
-                    ) : predictions?.predictions ? (
+                    ) : predictions && typeof predictions === 'object' && 'predictions' in predictions ? (
                         <div className="mb-8">
                             {/* Current Price */}
                             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -140,10 +144,10 @@ export const AIPredictions: React.FC = () => {
                                     </div>
                                     <div className="text-right">
                                         <div className="text-3xl font-bold text-gray-900">
-                                            {formatCurrency(predictions.current_price)}
+                                            {formatCurrency((predictions as any).current_price)}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            Generated: {formatDate(predictions.generated_at)}
+                                            Generated: {formatDate((predictions as any).generated_at)}
                                         </div>
                                     </div>
                                 </div>
@@ -151,11 +155,11 @@ export const AIPredictions: React.FC = () => {
 
                             {/* Predictions Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {Object.entries(predictions.predictions).map(([modelName, prediction]: [string, any]) => {
+                                {Object.entries((predictions as any).predictions).map(([modelName, prediction]: [string, any]) => {
                                     if (prediction.error) return null;
 
-                                    const priceChange = prediction.predicted_price - predictions.current_price;
-                                    const percentChange = (priceChange / predictions.current_price) * 100;
+                                    const priceChange = prediction.predicted_price - (predictions as any).current_price;
+                                    const percentChange = (priceChange / (predictions as any).current_price) * 100;
 
                                     return (
                                         <div key={modelName} className="bg-white rounded-lg shadow-md p-6">
@@ -198,7 +202,7 @@ export const AIPredictions: React.FC = () => {
                             </div>
 
                             {/* Ensemble Prediction (if available) */}
-                            {predictions.predictions.ensemble && (
+                            {(predictions as any).predictions?.ensemble && (
                                 <div className="bg-gradient-to-r from-purple-500 to-blue-600 rounded-lg shadow-md p-6 mt-6">
                                     <div className="flex items-center justify-between text-white">
                                         <div>
@@ -207,10 +211,10 @@ export const AIPredictions: React.FC = () => {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-3xl font-bold">
-                                                {formatCurrency(predictions.predictions.ensemble.predicted_price)}
+                                                {formatCurrency((predictions as any).predictions.ensemble.predicted_price)}
                                             </div>
                                             <div className="text-purple-100">
-                                                {(predictions.predictions.ensemble.confidence * 100).toFixed(1)}% Confidence
+                                                {((predictions as any).predictions.ensemble.confidence * 100).toFixed(1)}% Confidence
                                             </div>
                                         </div>
                                     </div>
