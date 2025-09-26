@@ -9,6 +9,12 @@ from app.services.ai_service import AIService
 
 router = APIRouter()
 
+@router.get("/test")
+async def test_ai_connection(db: Session = Depends(get_db)):
+    """Test OpenAI API connection"""
+    ai_service = AIService(db)
+    return ai_service.test_openai_connection()
+
 @router.post("/chat", response_model=schemas.ChatResponse)
 async def chat_with_ai(
     message: schemas.ChatMessage,
@@ -18,7 +24,7 @@ async def chat_with_ai(
     ai_service = AIService(db)
     
     try:
-        response = await ai_service.process_chat_message(
+        response = ai_service.process_chat_message(
             user_id=message.user_id,
             message=message.message,
             session_id=message.session_id

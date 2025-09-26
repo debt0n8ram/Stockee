@@ -18,7 +18,7 @@ class AIService:
         if self.openai_api_key:
             self.client = OpenAI(api_key=self.openai_api_key)
 
-    async def process_chat_message(self, user_id: str, message: str, session_id: Optional[str] = None) -> Dict:
+    def process_chat_message(self, user_id: str, message: str, session_id: Optional[str] = None) -> Dict:
         """Process chat message with ChatGPT"""
         if not self.openai_api_key:
             return {
@@ -46,13 +46,14 @@ class AIService:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4o-mini",  # Updated to GPT-4o-mini (latest model)
                 messages=[
                     {"role": "system", "content": context},
                     {"role": "user", "content": message}
                 ],
                 max_tokens=500,
-                temperature=0.7
+                temperature=0.7,
+                timeout=30  # Add timeout
             )
             
             ai_response = response.choices[0].message.content
@@ -76,15 +77,26 @@ class AIService:
         except Exception as e:
             logger.error(f"Error processing chat message: {e}")
             
-            # Check if it's a quota/billing error
-            if "quota" in str(e).lower() or "billing" in str(e).lower() or "429" in str(e):
+            # More specific error detection
+            error_str = str(e).lower()
+            if any(keyword in error_str for keyword in ["quota", "billing", "429", "insufficient_quota", "rate_limit"]):
                 return {
                     "response": "🤖 AI Assistant is temporarily unavailable due to API quota limits. Here's what I can tell you about your portfolio:\n\n" + self._get_fallback_portfolio_insights(portfolio_context),
                     "session_id": session_id
                 }
+            elif "timeout" in error_str or "connection" in error_str:
+                return {
+                    "response": "⏱️ AI Assistant is experiencing connection issues. Here's your portfolio summary:\n\n" + self._get_fallback_portfolio_insights(portfolio_context),
+                    "session_id": session_id
+                }
+            elif "invalid" in error_str or "unauthorized" in error_str or "401" in error_str:
+                return {
+                    "response": "🔑 AI Assistant configuration issue. Please check API key settings. Here's your portfolio summary:\n\n" + self._get_fallback_portfolio_insights(portfolio_context),
+                    "session_id": session_id
+                }
             else:
                 return {
-                    "response": "I'm sorry, I encountered an error processing your message. Please try again.",
+                    "response": f"I'm sorry, I encountered an error processing your message: {str(e)[:100]}... Please try again.",
                     "session_id": session_id
                 }
 
@@ -325,3 +337,28 @@ class AIService:
             recommendations.append("Consider reviewing your strategy or rebalancing")
         
         return recommendations[:3]  # Limit to 3 recommendations
+
+    def test_openai_connection(self) -> Dict:
+        """Test OpenAI API connection"""
+        if not self.openai_api_key:
+            return {"status": "error", "message": "No API key configured"}
+        
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": "Hello"}],
+                max_tokens=10,
+                timeout=10
+            )
+            return {
+                "status": "success", 
+                "message": "API connection successful",
+                "model": "gpt-4o-mini",
+                "response": response.choices[0].message.content
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"API connection failed: {str(e)}",
+                "error_type": type(e).__name__
+            }
