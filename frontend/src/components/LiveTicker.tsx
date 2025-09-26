@@ -83,8 +83,8 @@ const LiveTicker: React.FC = () => {
 
     fetchTickerData();
 
-    // Update every 30 seconds
-    const interval = setInterval(fetchTickerData, 30000);
+    // Update every 5 minutes instead of 30 seconds to reduce API calls
+    const interval = setInterval(fetchTickerData, 300000);
 
     return () => clearInterval(interval);
   }, []);

@@ -180,3 +180,9 @@ export interface BankTransactions {
         timestamp: string;
     }>;
 }
+
+export interface CashBalance {
+    cash_balance: number;
+    user_id: string;
+    last_updated: string;
+}

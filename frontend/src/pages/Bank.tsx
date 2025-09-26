@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, DollarSign, TrendingUp, History, RefreshCw, Plus, Minus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiService } from '../services/api';
-import { BankTransactions } from '../types/api';
+import { BankTransactions, CashBalance } from '../types/api';
 
 export const Bank: React.FC = () => {
     const [depositAmount, setDepositAmount] = useState('');
@@ -16,11 +16,11 @@ export const Bank: React.FC = () => {
     const userId = 'user1'; // In a real app, this would come from auth context
 
     // Get current balance
-    const { data: balance, isLoading: balanceLoading } = useQuery(
-        'bank-balance',
-        () => apiService.getCashBalance(userId),
-        { refetchInterval: 5000 }
-    );
+    const { data: balance, isLoading: balanceLoading } = useQuery<CashBalance>({
+        queryKey: ['bank-balance'],
+        queryFn: () => apiService.getCashBalance(userId),
+        refetchInterval: 5000
+    });
 
     // Get transaction history
     const { data: transactions, isLoading: transactionsLoading } = useQuery<BankTransactions>({
@@ -29,59 +29,53 @@ export const Bank: React.FC = () => {
     });
 
     // Deposit mutation
-    const depositMutation = useMutation(
-        (data: { amount: number; description: string }) =>
+    const depositMutation = useMutation({
+        mutationFn: (data: { amount: number; description: string }) =>
             apiService.depositCash(userId, data.amount, data.description),
-        {
-            onSuccess: (data) => {
-                toast.success(data.message);
-                setDepositAmount('');
-                setDepositDescription('');
-                queryClient.invalidateQueries('bank-balance');
-                queryClient.invalidateQueries('bank-transactions');
-                queryClient.invalidateQueries('portfolio');
-            },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.detail || 'Deposit failed');
-            }
+        onSuccess: (data) => {
+            toast.success(data.message);
+            setDepositAmount('');
+            setDepositDescription('');
+            queryClient.invalidateQueries({ queryKey: ['bank-balance'] });
+            queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Deposit failed');
         }
-    );
+    });
 
     // Withdraw mutation
-    const withdrawMutation = useMutation(
-        (data: { amount: number; description: string }) =>
+    const withdrawMutation = useMutation({
+        mutationFn: (data: { amount: number; description: string }) =>
             apiService.withdrawCash(userId, data.amount, data.description),
-        {
-            onSuccess: (data) => {
-                toast.success(data.message);
-                setWithdrawAmount('');
-                setWithdrawDescription('');
-                queryClient.invalidateQueries('bank-balance');
-                queryClient.invalidateQueries('bank-transactions');
-                queryClient.invalidateQueries('portfolio');
-            },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.detail || 'Withdrawal failed');
-            }
+        onSuccess: (data) => {
+            toast.success(data.message);
+            setWithdrawAmount('');
+            setWithdrawDescription('');
+            queryClient.invalidateQueries({ queryKey: ['bank-balance'] });
+            queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Withdrawal failed');
         }
-    );
+    });
 
     // Reset balance mutation
-    const resetMutation = useMutation(
-        (newBalance: number) => apiService.resetBalance(userId, newBalance),
-        {
-            onSuccess: (data) => {
-                toast.success(data.message);
-                setResetAmount('');
-                queryClient.invalidateQueries('bank-balance');
-                queryClient.invalidateQueries('bank-transactions');
-                queryClient.invalidateQueries('portfolio');
-            },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.detail || 'Reset failed');
-            }
+    const resetMutation = useMutation({
+        mutationFn: (newBalance: number) => apiService.resetBalance(userId, newBalance),
+        onSuccess: (data) => {
+            toast.success(data.message);
+            setResetAmount('');
+            queryClient.invalidateQueries({ queryKey: ['bank-balance'] });
+            queryClient.invalidateQueries({ queryKey: ['bank-transactions'] });
+            queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.detail || 'Reset failed');
         }
-    );
+    });
 
     const handleDeposit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -217,10 +211,10 @@ export const Bank: React.FC = () => {
 
                         <button
                             type="submit"
-                            disabled={depositMutation.isLoading}
+                            disabled={depositMutation.isPending}
                             className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                            {depositMutation.isLoading ? (
+                            {depositMutation.isPending ? (
                                 <RefreshCw className="animate-spin h-5 w-5 mr-2" />
                             ) : (
                                 <Plus className="h-5 w-5 mr-2" />
