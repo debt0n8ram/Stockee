@@ -1,0 +1,103 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "stockee-production"
+    replica: "prometheus-1"
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  # Stockee Backend API
+  - job_name: "stockee-backend"
+    static_configs:
+      - targets: ["backend:8000"]
+    metrics_path: "/api/metrics"
+    scrape_interval: 5s
+    scrape_timeout: 10s
+    honor_labels: true
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "stockee-backend"
+
+  # PostgreSQL Database
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres:5432"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis Cache
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis:6379"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Nginx
+  - job_name: "nginx"
+    static_configs:
+      - targets: ["nginx:80"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /nginx_status
+
+  # Node Exporter (if available)
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # cAdvisor (if available)
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Docker Daemon (if available)
+  - job_name: "docker"
+    static_configs:
+      - targets: ["docker:9323"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Elasticsearch (if available)
+  - job_name: "elasticsearch"
+    static_configs:
+      - targets: ["elasticsearch:9200"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /_prometheus/metrics
+
+  # Grafana (if available)
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:3000"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+
+  # Alertmanager (if available)
+  - job_name: "alertmanager"
+    static_configs:
+      - targets: ["alertmanager:9093"]
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: /metrics
