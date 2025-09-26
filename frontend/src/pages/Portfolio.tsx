@@ -8,13 +8,13 @@ export const Portfolio: React.FC = () => {
     const { data: portfolio, isLoading: portfolioLoading } = useQuery<PortfolioType>({
         queryKey: ['portfolio'],
         queryFn: () => apiService.getPortfolio('user1'),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     const { data: holdings, isLoading: holdingsLoading } = useQuery<Holding[]>({
         queryKey: ['holdings'],
         queryFn: () => apiService.getHoldings('user1'),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     const { data: transactions, isLoading: transactionsLoading } = useQuery<Transaction[]>({

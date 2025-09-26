@@ -31,28 +31,28 @@ const MarketScreener: React.FC = () => {
     const { data: marketOverview } = useQuery<MarketOverview>({
         queryKey: ['market-overview'],
         queryFn: () => apiService.getMarketOverview(),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     // Top gainers
     const { data: topGainers } = useQuery<TopGainers>({
         queryKey: ['top-gainers'],
         queryFn: () => apiService.getTopGainers(20),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     // Top losers
     const { data: topLosers } = useQuery<TopLosers>({
         queryKey: ['top-losers'],
         queryFn: () => apiService.getTopLosers(20),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     // Most active
     const { data: mostActive } = useQuery<MostActive>({
         queryKey: ['most-active'],
         queryFn: () => apiService.getMostActive(20),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     // Sector performance

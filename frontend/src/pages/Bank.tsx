@@ -19,7 +19,7 @@ export const Bank: React.FC = () => {
     const { data: balance, isLoading: balanceLoading } = useQuery<CashBalance>({
         queryKey: ['bank-balance'],
         queryFn: () => apiService.getCashBalance(userId),
-        refetchInterval: 5000
+        refetchInterval: 60000
     });
 
     // Get transaction history

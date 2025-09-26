@@ -35,14 +35,14 @@ export const Competition: React.FC = () => {
         queryKey: ['competition-data'],
         queryFn: () => apiService.getCompetitionData('user1'),
         enabled: hasOpponent,
-        refetchInterval: 30000 // Refresh every 30 seconds
+        refetchInterval: 300000 // Refresh every 5 minutes
     });
 
     // Fetch background AI status
     const { data: backgroundStatus, isLoading: backgroundLoading } = useQuery({
         queryKey: ['background-ai-status'],
         queryFn: () => apiService.getBackgroundAIStatus(),
-        refetchInterval: 30000 // Refresh every 30 seconds
+        refetchInterval: 300000 // Refresh every 5 minutes
     });
 
     // Create AI opponent mutation

@@ -37,36 +37,11 @@ export const LiveMarketTicker: React.FC<LiveMarketTickerProps> = ({ className = 
     const tickerRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // WebSocket connection for real-time data
-    useEffect(() => {
-        const ws = new WebSocket('ws://localhost:8000/api/ws/prices');
-
-        ws.onopen = () => {
-            setIsConnected(true);
-            console.log('Ticker WebSocket connected');
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'price_update') {
-                updateTickerData(data);
-            }
-        };
-
-        ws.onclose = () => {
-            setIsConnected(false);
-            console.log('Ticker WebSocket disconnected');
-        };
-
-        ws.onerror = (error) => {
-            console.error('Ticker WebSocket error:', error);
-            setIsConnected(false);
-        };
-
-        return () => {
-            ws.close();
-        };
-    }, []);
+    // WebSocket connection disabled to prevent connection failures
+    // useEffect(() => {
+    //     const ws = new WebSocket('ws://localhost:8000/api/ws/prices');
+    //     // ... WebSocket code commented out
+    // }, []);
 
     // Load initial ticker data
     useEffect(() => {

@@ -89,34 +89,11 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({ className 
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [refreshInterval, setRefreshInterval] = useState(5000);
 
-    // WebSocket connection for real-time data
-    useEffect(() => {
-        const ws = new WebSocket('ws://localhost:8000/api/ws/prices');
-
-        ws.onopen = () => {
-            setIsConnected(true);
-            console.log('WebSocket connected');
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            handleWebSocketMessage(data);
-        };
-
-        ws.onclose = () => {
-            setIsConnected(false);
-            console.log('WebSocket disconnected');
-        };
-
-        ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            setIsConnected(false);
-        };
-
-        return () => {
-            ws.close();
-        };
-    }, []);
+    // WebSocket connection disabled to prevent connection failures
+    // useEffect(() => {
+    //     const ws = new WebSocket('ws://localhost:8000/api/ws/prices');
+    //     // ... WebSocket code commented out
+    // }, []);
 
     // Auto-refresh data
     useEffect(() => {
@@ -127,7 +104,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({ className 
             fetchPortfolioData();
             fetchNewsData();
             fetchAlerts();
-        }, refreshInterval);
+        }, 300000); // 5 minutes instead of 5 seconds
 
         return () => clearInterval(interval);
     }, [autoRefresh, refreshInterval]);

@@ -14,7 +14,7 @@ export const Dashboard: React.FC = () => {
     const { data: portfolio, isLoading: portfolioLoading } = useQuery<Portfolio>({
         queryKey: ['portfolio'],
         queryFn: () => apiService.getPortfolio('user1'),
-        refetchInterval: 30000
+        refetchInterval: 300000
     });
 
     const { data: performance, isLoading: performanceLoading } = useQuery<Performance>({
