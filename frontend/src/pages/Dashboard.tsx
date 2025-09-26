@@ -61,7 +61,7 @@ export const Dashboard: React.FC = () => {
         { date: '2024-01-07', value: 105000 },
     ];
 
-    const pieData = allocation?.stocks?.map((stock: any) => ({
+    const pieData = allocation?.allocation?.stocks?.map((stock: any) => ({
         name: stock.symbol,
         value: stock.value,
         percentage: stock.percentage

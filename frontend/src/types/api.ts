@@ -57,13 +57,13 @@ export interface Performance {
 }
 
 export interface MarketOverview {
-  market_overview: {
-    total_stocks: number;
-    total_volume: number;
-    advancing_stocks: number;
-    declining_stocks: number;
-    unchanged_stocks: number;
-  };
+    market_overview: {
+        total_stocks: number;
+        total_volume: number;
+        advancing_stocks: number;
+        declining_stocks: number;
+        unchanged_stocks: number;
+    };
 }
 
 export interface TopGainers {
@@ -109,18 +109,18 @@ export interface SectorPerformance {
 }
 
 export interface ScreenedStocks {
-  results: Array<{
-    symbol: string;
-    name: string;
-    price: number;
-    change: number;
-    change_percent: number;
-    volume: number;
-    market_cap: number;
-    sector: string;
-    exchange: string;
-  }>;
-  count: number;
+    results: Array<{
+        symbol: string;
+        name: string;
+        price: number;
+        change: number;
+        change_percent: number;
+        volume: number;
+        market_cap: number;
+        sector: string;
+        exchange: string;
+    }>;
+    count: number;
 }
 
 export interface AIOpponent {
@@ -138,7 +138,45 @@ export interface AIOpponent {
 }
 
 export interface PortfolioAllocation {
-    allocation: Record<string, number>;
+    allocation: {
+        cash: {
+            value: number;
+            percentage: number;
+        };
+        stocks: Array<{
+            symbol: string;
+            name: string;
+            value: number;
+            percentage: number;
+            quantity: number;
+        }>;
+        crypto: Array<{
+            symbol: string;
+            name: string;
+            value: number;
+            percentage: number;
+            quantity: number;
+        }>;
+        other: Array<{
+            symbol: string;
+            name: string;
+            value: number;
+            percentage: number;
+            quantity: number;
+        }>;
+    };
     total_value: number;
     cash_percentage: number;
+}
+
+export interface BankTransactions {
+    transactions: Array<{
+        id: number;
+        user_id: string;
+        transaction_type: 'deposit' | 'withdrawal';
+        amount: number;
+        description: string;
+        balance_after: number;
+        timestamp: string;
+    }>;
 }

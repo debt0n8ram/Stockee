@@ -18,16 +18,17 @@ export const Competition: React.FC = () => {
     // Check for existing AI opponent
     const { data: opponentData, isLoading: opponentLoading } = useQuery({
         queryKey: ['ai-opponent'],
-        queryFn: () => apiService.getAIOpponent('user1'),
-        onSuccess: (data) => {
-            if (data) {
-                setHasOpponent(true);
-            }
-        },
-        onError: () => {
+        queryFn: () => apiService.getAIOpponent('user1')
+    });
+
+    // Handle opponent data changes
+    React.useEffect(() => {
+        if (opponentData) {
+            setHasOpponent(true);
+        } else {
             setHasOpponent(false);
         }
-    });
+    }, [opponentData]);
 
     // Fetch competition data
     const { data: competitionData, isLoading: competitionLoading } = useQuery({
@@ -249,18 +250,18 @@ export const Competition: React.FC = () => {
                             {backgroundStatus.is_running ? (
                                 <button
                                     onClick={handleStopBackgroundAI}
-                                    disabled={stopBackgroundAIMutation.isLoading}
+                                    disabled={stopBackgroundAIMutation.isPending}
                                     className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
                                 >
-                                    {stopBackgroundAIMutation.isLoading ? 'Stopping...' : 'Stop Background AI'}
+                                    {stopBackgroundAIMutation.isPending ? 'Stopping...' : 'Stop Background AI'}
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleStartBackgroundAI}
-                                    disabled={startBackgroundAIMutation.isLoading}
+                                    disabled={startBackgroundAIMutation.isPending}
                                     className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
                                 >
-                                    {startBackgroundAIMutation.isLoading ? 'Starting...' : 'Start Background AI'}
+                                    {startBackgroundAIMutation.isPending ? 'Starting...' : 'Start Background AI'}
                                 </button>
                             )}
                         </div>

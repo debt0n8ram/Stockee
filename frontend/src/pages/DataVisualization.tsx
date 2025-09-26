@@ -154,7 +154,7 @@ const DataVisualization: React.FC = () => {
 
       {renderContent()}
 
-      <style jsx>{`
+      <style>{`
         .data-visualization-page {
           max-width: 1400px;
           margin: 0 auto;

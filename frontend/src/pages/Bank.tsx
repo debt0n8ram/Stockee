@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, DollarSign, TrendingUp, History, RefreshCw, Plus, Minus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiService } from '../services/api';
+import { BankTransactions } from '../types/api';
 
 export const Bank: React.FC = () => {
     const [depositAmount, setDepositAmount] = useState('');
@@ -22,10 +23,10 @@ export const Bank: React.FC = () => {
     );
 
     // Get transaction history
-    const { data: transactions, isLoading: transactionsLoading } = useQuery(
-        'bank-transactions',
-        () => apiService.getBankTransactions(userId, 20)
-    );
+    const { data: transactions, isLoading: transactionsLoading } = useQuery<BankTransactions>({
+        queryKey: ['bank-transactions'],
+        queryFn: () => apiService.getBankTransactions(userId, 20)
+    });
 
     // Deposit mutation
     const depositMutation = useMutation(
@@ -272,10 +273,10 @@ export const Bank: React.FC = () => {
 
                         <button
                             type="submit"
-                            disabled={withdrawMutation.isLoading}
+                            disabled={withdrawMutation.isPending}
                             className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                         >
-                            {withdrawMutation.isLoading ? (
+                            {withdrawMutation.isPending ? (
                                 <RefreshCw className="animate-spin h-5 w-5 mr-2" />
                             ) : (
                                 <Minus className="h-5 w-5 mr-2" />
@@ -341,7 +342,7 @@ export const Bank: React.FC = () => {
                         <RefreshCw className="animate-spin h-6 w-6 text-blue-500 mr-2" />
                         <span className="text-gray-500">Loading transactions...</span>
                     </div>
-                ) : transactions?.transactions?.length > 0 ? (
+                ) : transactions && 'transactions' in transactions && Array.isArray(transactions.transactions) && transactions.transactions.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
