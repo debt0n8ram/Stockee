@@ -4,7 +4,7 @@ from app.db import models, schemas
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 import logging
-import openai
+from openai import OpenAI
 import os
 import json
 
@@ -14,8 +14,9 @@ class AIService:
     def __init__(self, db: Session):
         self.db = db
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.client = None
         if self.openai_api_key:
-            openai.api_key = self.openai_api_key
+            self.client = OpenAI(api_key=self.openai_api_key)
 
     async def process_chat_message(self, user_id: str, message: str, session_id: Optional[str] = None) -> Dict:
         """Process chat message with ChatGPT"""
@@ -44,7 +45,7 @@ class AIService:
         """
         
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": context},
