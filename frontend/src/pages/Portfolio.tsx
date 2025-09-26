@@ -2,25 +2,26 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, RefreshCw } from 'lucide-react';
 import { apiService } from '../services/api';
+import { Portfolio as PortfolioType, Holding, Transaction } from '../types/api';
 
 export const Portfolio: React.FC = () => {
-    const { data: portfolio, isLoading: portfolioLoading } = useQuery(
-        'portfolio',
-        () => apiService.getPortfolio('user1'),
-        { refetchInterval: 30000 }
-    );
+    const { data: portfolio, isLoading: portfolioLoading } = useQuery<PortfolioType>({
+        queryKey: ['portfolio'],
+        queryFn: () => apiService.getPortfolio('user1'),
+        refetchInterval: 30000
+    });
 
-    const { data: holdings, isLoading: holdingsLoading } = useQuery(
-        'holdings',
-        () => apiService.getHoldings('user1'),
-        { refetchInterval: 30000 }
-    );
+    const { data: holdings, isLoading: holdingsLoading } = useQuery<Holding[]>({
+        queryKey: ['holdings'],
+        queryFn: () => apiService.getHoldings('user1'),
+        refetchInterval: 30000
+    });
 
-    const { data: transactions, isLoading: transactionsLoading } = useQuery(
-        'transactions',
-        () => apiService.getTransactions('user1', 20),
-        { refetchInterval: 60000 }
-    );
+    const { data: transactions, isLoading: transactionsLoading } = useQuery<Transaction[]>({
+        queryKey: ['transactions'],
+        queryFn: () => apiService.getTransactions('user1', 20),
+        refetchInterval: 60000
+    });
 
     if (portfolioLoading || holdingsLoading || transactionsLoading) {
         return (

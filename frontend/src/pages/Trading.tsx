@@ -41,43 +41,40 @@ export const Trading: React.FC = () => {
     return 0;
   };
 
-  const { data: searchResults, isLoading: searchLoading } = useQuery(
-    ['search', searchQuery],
-    () => apiService.searchAssets(searchQuery),
-    { enabled: searchQuery.length > 2 }
-  );
+  const { data: searchResults, isLoading: searchLoading } = useQuery({
+    queryKey: ['search', searchQuery],
+    queryFn: () => apiService.searchAssets(searchQuery),
+    enabled: searchQuery.length > 2
+  });
 
-  const { data: currentPrice } = useQuery(
-    ['price', selectedAsset?.symbol],
-    () => apiService.getCurrentPrice(selectedAsset?.symbol),
-    {
-      enabled: !!selectedAsset?.symbol,
-      onSuccess: (data) => {
-        console.log('🚨 CURRENT PRICE DATA:', data);
-        if (data && typeof data === 'object' && 'symbol' in data && 'price' in data && 'timestamp' in data) {
-          console.warn('🚨 FULL PRICE OBJECT RECEIVED:', data);
-        }
+  const { data: currentPrice } = useQuery({
+    queryKey: ['price', selectedAsset?.symbol],
+    queryFn: () => apiService.getCurrentPrice(selectedAsset?.symbol),
+    enabled: !!selectedAsset?.symbol,
+    onSuccess: (data) => {
+      console.log('🚨 CURRENT PRICE DATA:', data);
+      if (data && typeof data === 'object' && 'symbol' in data && 'price' in data && 'timestamp' in data) {
+        console.warn('🚨 FULL PRICE OBJECT RECEIVED:', data);
       }
     }
-  );
+  });
 
-  const executeOrderMutation = useMutation(
-    (orderData: any) => {
+  const executeOrderMutation = useMutation({
+    mutationFn: (orderData: any) => {
       if (orderType === 'buy') {
         return apiService.buyStock('user1', orderData);
       } else {
         return apiService.sellStock('user1', orderData);
       }
     },
-    {
-      onSuccess: (response: any) => {
-        if (response?.success) {
-          toast.success(response?.message || 'Order executed successfully');
-          queryClient.invalidateQueries('portfolio');
-          queryClient.invalidateQueries('performance');
-          setQuantity('');
-          setLimitPrice('');
-        } else {
+    onSuccess: (response: any) => {
+      if (response?.success) {
+        toast.success(response?.message || 'Order executed successfully');
+        queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+        queryClient.invalidateQueries({ queryKey: ['performance'] });
+        setQuantity('');
+        setLimitPrice('');
+      } else {
           toast.error(response?.message || 'Order failed');
         }
       },

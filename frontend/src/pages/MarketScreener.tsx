@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
+import { MarketOverview, TopGainers, TopLosers, MostActive, SectorPerformance, ScreenedStocks } from '../types/api';
 import {
     Search,
     TrendingUp,
@@ -27,46 +28,46 @@ const MarketScreener: React.FC = () => {
     const [activeTab, setActiveTab] = useState('screener');
 
     // Market overview
-    const { data: marketOverview } = useQuery(
-        'market-overview',
-        () => apiService.getMarketOverview(),
-        { refetchInterval: 30000 }
-    );
+    const { data: marketOverview } = useQuery<MarketOverview>({
+        queryKey: ['market-overview'],
+        queryFn: () => apiService.getMarketOverview(),
+        refetchInterval: 30000
+    });
 
     // Top gainers
-    const { data: topGainers } = useQuery(
-        'top-gainers',
-        () => apiService.getTopGainers(20),
-        { refetchInterval: 30000 }
-    );
+    const { data: topGainers } = useQuery<TopGainers>({
+        queryKey: ['top-gainers'],
+        queryFn: () => apiService.getTopGainers(20),
+        refetchInterval: 30000
+    });
 
     // Top losers
-    const { data: topLosers } = useQuery(
-        'top-losers',
-        () => apiService.getTopLosers(20),
-        { refetchInterval: 30000 }
-    );
+    const { data: topLosers } = useQuery<TopLosers>({
+        queryKey: ['top-losers'],
+        queryFn: () => apiService.getTopLosers(20),
+        refetchInterval: 30000
+    });
 
     // Most active
-    const { data: mostActive } = useQuery(
-        'most-active',
-        () => apiService.getMostActive(20),
-        { refetchInterval: 30000 }
-    );
+    const { data: mostActive } = useQuery<MostActive>({
+        queryKey: ['most-active'],
+        queryFn: () => apiService.getMostActive(20),
+        refetchInterval: 30000
+    });
 
     // Sector performance
-    const { data: sectorPerformance } = useQuery(
-        'sector-performance',
-        () => apiService.getSectorPerformance(),
-        { refetchInterval: 60000 }
-    );
+    const { data: sectorPerformance } = useQuery<SectorPerformance>({
+        queryKey: ['sector-performance'],
+        queryFn: () => apiService.getSectorPerformance(),
+        refetchInterval: 60000
+    });
 
     // Screened stocks
-    const { data: screenedStocks, refetch: refetchScreened } = useQuery(
-        ['screened-stocks', filters],
-        () => apiService.screenStocks(filters),
-        { enabled: false }
-    );
+    const { data: screenedStocks, refetch: refetchScreened } = useQuery<ScreenedStocks>({
+        queryKey: ['screened-stocks', filters],
+        queryFn: () => apiService.screenStocks(filters),
+        enabled: false
+    });
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -464,7 +465,7 @@ const MarketScreener: React.FC = () => {
                 )}
 
                 {/* Sector Performance */}
-                {activeTab === 'sectors' && sectorPerformance?.sector_performance && (
+                {activeTab === 'sectors' && sectorPerformance && 'sector_performance' in sectorPerformance && Array.isArray(sectorPerformance.sector_performance) && (
                     <div className="card">
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Sector Performance</h3>
                         <div className="space-y-4">

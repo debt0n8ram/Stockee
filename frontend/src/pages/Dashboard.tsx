@@ -4,33 +4,34 @@ import { TrendingUp, TrendingDown, DollarSign, Trophy } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell } from 'recharts';
 import { apiService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { Portfolio, Performance, AIOpponent, PortfolioAllocation } from '../types/api';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
 
-    const { data: portfolio, isLoading: portfolioLoading } = useQuery({
+    const { data: portfolio, isLoading: portfolioLoading } = useQuery<Portfolio>({
         queryKey: ['portfolio'],
         queryFn: () => apiService.getPortfolio('user1'),
         refetchInterval: 30000
     });
 
-    const { data: performance, isLoading: performanceLoading } = useQuery({
+    const { data: performance, isLoading: performanceLoading } = useQuery<Performance>({
         queryKey: ['performance'],
         queryFn: () => apiService.getPerformance('user1'),
         refetchInterval: 60000
     });
 
     // Check for active AI competition
-    const { data: aiOpponent } = useQuery({
+    const { data: aiOpponent } = useQuery<AIOpponent>({
         queryKey: ['ai-opponent'],
         queryFn: () => apiService.getAIOpponent('user1'),
         refetchInterval: 60000, // Check every minute
         retry: false // Don't retry if no opponent exists
     });
 
-    const { data: allocation, isLoading: allocationLoading } = useQuery({
+    const { data: allocation, isLoading: allocationLoading } = useQuery<PortfolioAllocation>({
         queryKey: ['allocation'],
         queryFn: () => apiService.getPortfolioAllocation('user1'),
         refetchInterval: 60000
