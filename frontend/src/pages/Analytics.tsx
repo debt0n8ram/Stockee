@@ -8,10 +8,10 @@ import { PerformanceAnalytics, RiskMetrics, BenchmarkComparison, PortfolioAlloca
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 // Info tooltip component
-const InfoTooltip: React.FC<{ 
-    content: string; 
-    id: string; 
-    showTooltip: string | null; 
+const InfoTooltip: React.FC<{
+    content: string;
+    id: string;
+    showTooltip: string | null;
     setShowTooltip: (id: string | null) => void;
 }> = ({ content, id, showTooltip, setShowTooltip }) => {
     return (
@@ -63,14 +63,6 @@ export const Analytics: React.FC = () => {
         refetchInterval: 300000
     });
 
-    if (performanceLoading || riskLoading || benchmarkLoading || allocationLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
-
     // Generate realistic performance data based on time period
     const generatePerformanceData = () => {
         const days = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : timePeriod === '90d' ? 90 : 365;
@@ -105,11 +97,35 @@ export const Analytics: React.FC = () => {
     };
 
     const performanceData = generatePerformanceData();
-    const allocationData = allocation?.allocation?.stocks?.map((stock: any) => ({
-        name: stock.symbol,
-        value: stock.value,
-        percentage: stock.percentage
-    })) || [];
+    
+    // Generate allocation data with fallback
+    const allocationData = React.useMemo(() => {
+        if (allocation?.allocation?.stocks && allocation.allocation.stocks.length > 0) {
+            return allocation.allocation.stocks.map((stock: any) => ({
+                name: stock.symbol,
+                value: stock.value || 0,
+                percentage: stock.percentage || 0
+            }));
+        }
+        
+        // Fallback mock data for demonstration
+        return [
+            { name: 'AAPL', value: 25000, percentage: 25 },
+            { name: 'MSFT', value: 20000, percentage: 20 },
+            { name: 'GOOGL', value: 15000, percentage: 15 },
+            { name: 'TSLA', value: 10000, percentage: 10 },
+            { name: 'NVDA', value: 8000, percentage: 8 },
+            { name: 'Cash', value: 22000, percentage: 22 }
+        ];
+    }, [allocation]);
+
+    if (performanceLoading || riskLoading || benchmarkLoading || allocationLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
 
     // Chart type icons
     const chartTypeIcons = {
@@ -204,7 +220,7 @@ export const Analytics: React.FC = () => {
                                 <option value="1y">1 Year</option>
                             </select>
                         </div>
-                        
+
                         {/* Chart Type Selector */}
                         <div className="flex items-center space-x-2">
                             <Settings className="h-4 w-4 text-gray-500" />
@@ -213,11 +229,10 @@ export const Analytics: React.FC = () => {
                                     <button
                                         key={type}
                                         onClick={() => setChartType(type as any)}
-                                        className={`p-2 rounded-md transition-colors ${
-                                            chartType === type
+                                        className={`p-2 rounded-md transition-colors ${chartType === type
                                                 ? 'bg-blue-100 text-blue-600'
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                                        }`}
+                                            }`}
                                         title={`${type.charAt(0).toUpperCase() + type.slice(1)} Chart`}
                                     >
                                         <Icon className="h-4 w-4" />
@@ -227,7 +242,7 @@ export const Analytics: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Interactive Chart */}
                 <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
@@ -380,12 +395,21 @@ export const Analytics: React.FC = () => {
                                 fill="#8884d8"
                                 dataKey="value"
                                 label={({ name, percentage }) => `${name} ${percentage}%`}
+                                labelLine={false}
                             >
                                 {allocationData.map((entry: any, index: number) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}`, 'Value']} />
+                            <Tooltip 
+                                formatter={(value: any) => [`$${value.toLocaleString()}`, 'Value']}
+                                labelFormatter={(label, payload) => {
+                                    if (payload && payload[0]) {
+                                        return `${payload[0].payload.name} (${payload[0].payload.percentage}%)`;
+                                    }
+                                    return label;
+                                }}
+                            />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
