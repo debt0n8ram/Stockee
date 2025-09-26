@@ -5,7 +5,7 @@ import uvicorn
 from dotenv import load_dotenv
 
 # Import only essential modules first
-from app.api import auth, portfolio, trading, market_data, analytics, bank, ai_opponent, background_ai, news, crypto, options, ai_predictions, historical_data, economic_data
+from app.api import auth, portfolio, trading, market_data, analytics, bank, ai_opponent, background_ai, news, crypto, options, ai_predictions, ai, historical_data, economic_data
 from app.db.database import engine, Base
 
 # Load environment variables
@@ -46,6 +46,7 @@ app.include_router(news.router, tags=["News"])
 app.include_router(crypto.router, tags=["Crypto"])
 app.include_router(options.router, tags=["Options"])
 app.include_router(ai_predictions.router, tags=["AI Predictions"])
+app.include_router(ai.router, prefix="/api/ai", tags=["AI Assistant"])
 app.include_router(ai_opponent.router, prefix="/api/ai-opponent", tags=["AI Opponent"])
 app.include_router(background_ai.router, prefix="/api/background-ai", tags=["Background AI"])
 app.include_router(historical_data.router, tags=["Historical Data"])
