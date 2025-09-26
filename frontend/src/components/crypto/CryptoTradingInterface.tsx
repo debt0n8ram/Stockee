@@ -511,7 +511,7 @@ export const CryptoTradingInterface: React.FC<CryptoTradingInterfaceProps> = ({ 
                                                     <div>
                                                         <div className="font-semibold">{position.symbol}</div>
                                                         <div className="text-sm text-gray-600">
-                                                            {position.amount?.toFixed(6) || '0.000000'} tokens
+                                                            {position.quantity?.toFixed(6) || '0.000000'} tokens
                                                         </div>
                                                     </div>
                                                 </div>

@@ -3,77 +3,78 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, TrendingUp, TrendingDown, DollarSign, Clock, Globe, BarChart3, Activity, Volume2, Target, Brain } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { apiService } from '../services/api';
+import { Asset } from '../types/api';
 
 export const MarketData: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAsset, setSelectedAsset] = useState<any>(null);
     const [timeframe, setTimeframe] = useState('1d');
 
-    const { data: searchResults, isLoading: searchLoading } = useQuery(
-        ['search', searchQuery],
-        () => apiService.searchAssets(searchQuery),
-        { enabled: searchQuery.length > 2 }
-    );
+    const { data: searchResults, isLoading: searchLoading } = useQuery({
+        queryKey: ['search', searchQuery],
+        queryFn: () => apiService.searchAssets(searchQuery),
+        enabled: searchQuery.length > 2
+    });
 
-    const { data: currentPrice } = useQuery(
-        ['price', selectedAsset?.symbol],
-        () => apiService.getCurrentPrice(selectedAsset?.symbol),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: currentPrice } = useQuery({
+        queryKey: ['price', selectedAsset?.symbol],
+        queryFn: () => apiService.getCurrentPrice(selectedAsset?.symbol),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: priceHistory } = useQuery(
-        ['priceHistory', selectedAsset?.symbol, timeframe],
-        () => apiService.getPriceHistory(selectedAsset?.symbol, 30, timeframe),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: priceHistory } = useQuery({
+        queryKey: ['priceHistory', selectedAsset?.symbol, timeframe],
+        queryFn: () => apiService.getPriceHistory(selectedAsset?.symbol, 30, timeframe),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: chartData } = useQuery(
-        ['chartData', selectedAsset?.symbol, timeframe],
-        () => apiService.getChartData(selectedAsset?.symbol, 30, timeframe),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: chartData } = useQuery({
+        queryKey: ['chartData', selectedAsset?.symbol, timeframe],
+        queryFn: () => apiService.getChartData(selectedAsset?.symbol, 30, timeframe),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: marketStatus } = useQuery(
-        'market-status',
-        () => apiService.getMarketStatus(),
-        { refetchInterval: 60000 }
-    );
+    const { data: marketStatus } = useQuery({
+        queryKey: ['market-status'],
+        queryFn: () => apiService.getMarketStatus(),
+        refetchInterval: 60000
+    });
 
-    const { data: trendingAssets } = useQuery(
-        'trending-assets',
-        () => apiService.getTrendingAssets(10),
-        { refetchInterval: 300000 }
-    );
+    const { data: trendingAssets } = useQuery({
+        queryKey: ['trending-assets'],
+        queryFn: () => apiService.getTrendingAssets(10),
+        refetchInterval: 300000
+    });
 
-    const { data: news } = useQuery(
-        ['news', selectedAsset?.symbol],
-        () => apiService.getAssetNews(selectedAsset?.symbol, 5),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: news } = useQuery({
+        queryKey: ['news', selectedAsset?.symbol],
+        queryFn: () => apiService.getAssetNews(selectedAsset?.symbol, 5),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: aiPredictions } = useQuery(
-        ['ai-predictions', selectedAsset?.symbol],
-        () => apiService.getAIPredictions(selectedAsset?.symbol, 7),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: aiPredictions } = useQuery({
+        queryKey: ['ai-predictions', selectedAsset?.symbol],
+        queryFn: () => apiService.getAIPredictions(selectedAsset?.symbol, 7),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: technicalIndicators } = useQuery(
-        ['technical-indicators', selectedAsset?.symbol],
-        () => apiService.getTechnicalIndicators(selectedAsset?.symbol, 30),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: technicalIndicators } = useQuery({
+        queryKey: ['technical-indicators', selectedAsset?.symbol],
+        queryFn: () => apiService.getTechnicalIndicators(selectedAsset?.symbol, 30),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: technicalSummary } = useQuery(
-        ['technical-summary', selectedAsset?.symbol],
-        () => apiService.getTechnicalSummary(selectedAsset?.symbol, 30),
-        { enabled: !!selectedAsset?.symbol }
-    );
+    const { data: technicalSummary } = useQuery({
+        queryKey: ['technical-summary', selectedAsset?.symbol],
+        queryFn: () => apiService.getTechnicalSummary(selectedAsset?.symbol, 30),
+        enabled: !!selectedAsset?.symbol
+    });
 
-    const { data: marketNews } = useQuery(
-        'market-news',
-        () => apiService.getMarketNews(5),
-        { refetchInterval: 300000 } // Refresh every 5 minutes
-    );
+    const { data: marketNews } = useQuery({
+        queryKey: ['market-news'],
+        queryFn: () => apiService.getMarketNews(5),
+        refetchInterval: 300000 // Refresh every 5 minutes
+    });
 
     const timeframes = [
         { value: '1d', label: '1 Day' },
@@ -526,7 +527,7 @@ export const MarketData: React.FC = () => {
                                         <h3 className="text-lg font-medium text-gray-900">Volume Analysis</h3>
                                     </div>
                                     <ResponsiveContainer width="100%" height={200}>
-                                        <BarChart data={chartData.data}>
+                                        <BarChart data={chartData?.data || []}>
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis
                                                 dataKey="timestamp"
@@ -546,7 +547,7 @@ export const MarketData: React.FC = () => {
                             )}
 
                             {/* News */}
-                            {news && news.length > 0 && (
+                            {news && Array.isArray(news) && news.length > 0 && (
                                 <div className="card">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Latest News</h3>
                                     <div className="space-y-3">

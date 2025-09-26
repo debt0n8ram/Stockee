@@ -50,14 +50,18 @@ export const Trading: React.FC = () => {
   const { data: currentPrice } = useQuery({
     queryKey: ['price', selectedAsset?.symbol],
     queryFn: () => apiService.getCurrentPrice(selectedAsset?.symbol),
-    enabled: !!selectedAsset?.symbol,
-    onSuccess: (data) => {
-      console.log('🚨 CURRENT PRICE DATA:', data);
-      if (data && typeof data === 'object' && 'symbol' in data && 'price' in data && 'timestamp' in data) {
-        console.warn('🚨 FULL PRICE OBJECT RECEIVED:', data);
+    enabled: !!selectedAsset?.symbol
+  });
+
+  // Log price data when it changes
+  React.useEffect(() => {
+    if (currentPrice) {
+      console.log('🚨 CURRENT PRICE DATA:', currentPrice);
+      if (currentPrice && typeof currentPrice === 'object' && 'symbol' in currentPrice && 'price' in currentPrice && 'timestamp' in currentPrice) {
+        console.warn('🚨 FULL PRICE OBJECT RECEIVED:', currentPrice);
       }
     }
-  });
+  }, [currentPrice]);
 
   const executeOrderMutation = useMutation({
     mutationFn: (orderData: any) => {
@@ -75,13 +79,13 @@ export const Trading: React.FC = () => {
         setQuantity('');
         setLimitPrice('');
       } else {
-          toast.error(response?.message || 'Order failed');
-        }
-      },
-      onError: (error: any) => {
-        toast.error(error?.message || 'Order failed');
+        toast.error(response?.message || 'Order failed');
       }
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Order failed');
     }
+  }
   );
 
   const handleOrderSubmit = (e: React.FormEvent) => {
