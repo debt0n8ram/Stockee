@@ -75,10 +75,18 @@ class AIService:
             
         except Exception as e:
             logger.error(f"Error processing chat message: {e}")
-            return {
-                "response": "I'm sorry, I encountered an error processing your message. Please try again.",
-                "session_id": session_id
-            }
+            
+            # Check if it's a quota/billing error
+            if "quota" in str(e).lower() or "billing" in str(e).lower() or "429" in str(e):
+                return {
+                    "response": "🤖 AI Assistant is temporarily unavailable due to API quota limits. Here's what I can tell you about your portfolio:\n\n" + self._get_fallback_portfolio_insights(portfolio_context),
+                    "session_id": session_id
+                }
+            else:
+                return {
+                    "response": "I'm sorry, I encountered an error processing your message. Please try again.",
+                    "session_id": session_id
+                }
 
     def get_price_predictions(self, symbol: str, days: int = 30) -> List[Dict]:
         """Get AI price predictions for an asset"""
@@ -247,3 +255,73 @@ class AIService:
             recommendations.append("Your portfolio looks well-balanced")
         
         return recommendations
+
+    def _get_fallback_portfolio_insights(self, portfolio_context: Dict) -> str:
+        """Generate fallback portfolio insights when AI is unavailable"""
+        insights = []
+        
+        # Portfolio overview
+        total_value = portfolio_context.get("total_value", 0)
+        cash_balance = portfolio_context.get("cash_balance", 0)
+        positions = portfolio_context.get("number_of_positions", 0)
+        
+        insights.append(f"📊 **Portfolio Overview:**")
+        insights.append(f"• Total Value: ${total_value:,.2f}")
+        insights.append(f"• Cash Balance: ${cash_balance:,.2f}")
+        insights.append(f"• Active Positions: {positions}")
+        
+        # Top holdings
+        holdings = portfolio_context.get("holdings", [])
+        if holdings:
+            insights.append(f"\n🏆 **Top Holdings:**")
+            for i, holding in enumerate(holdings[:3], 1):
+                symbol = holding.get("symbol", "N/A")
+                value = holding.get("current_value", 0)
+                percentage = (value / total_value * 100) if total_value > 0 else 0
+                insights.append(f"{i}. {symbol}: ${value:,.2f} ({percentage:.1f}%)")
+        
+        # Performance summary
+        total_return = portfolio_context.get("total_return", 0)
+        insights.append(f"\n📈 **Performance:**")
+        insights.append(f"• Total Return: {total_return:+.2f}%")
+        
+        # Recommendations
+        recommendations = self._generate_recommendations_from_context(portfolio_context)
+        if recommendations:
+            insights.append(f"\n💡 **Recommendations:**")
+            for rec in recommendations:
+                insights.append(f"• {rec}")
+        
+        insights.append(f"\n⚠️ *Note: AI insights are limited due to API quota. For full AI assistance, please check your OpenAI billing.*")
+        
+        return "\n".join(insights)
+
+    def _generate_recommendations_from_context(self, portfolio_context: Dict) -> List[str]:
+        """Generate recommendations based on portfolio context"""
+        recommendations = []
+        
+        positions = portfolio_context.get("number_of_positions", 0)
+        cash_balance = portfolio_context.get("cash_balance", 0)
+        total_value = portfolio_context.get("total_value", 1)
+        total_return = portfolio_context.get("total_return", 0)
+        
+        # Diversification
+        if positions < 3:
+            recommendations.append("Consider diversifying with more positions to reduce risk")
+        elif positions > 10:
+            recommendations.append("Your portfolio is well-diversified across many positions")
+        
+        # Cash allocation
+        cash_percentage = (cash_balance / total_value) * 100
+        if cash_percentage > 50:
+            recommendations.append("High cash allocation - consider investing more for better returns")
+        elif cash_percentage < 5:
+            recommendations.append("Low cash allocation - maintain some liquidity for opportunities")
+        
+        # Performance
+        if total_return > 10:
+            recommendations.append("Strong performance! Consider taking some profits")
+        elif total_return < -10:
+            recommendations.append("Consider reviewing your strategy or rebalancing")
+        
+        return recommendations[:3]  # Limit to 3 recommendations
