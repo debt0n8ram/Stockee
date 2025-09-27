@@ -47,15 +47,18 @@ class AIService:
         """
         
         try:
-            response = self.client.responses.create(
-                model="gpt-5-mini",
-                input=context,
-                max_output_tokens=500,
+            response = self.client.chat.completions.create(
+                model="gpt-5",
+                messages=[
+                    {"role": "system", "content": "You are Stockee, an AI assistant for a stock and crypto trading simulator."},
+                    {"role": "user", "content": f"Portfolio context: {json.dumps(portfolio_context, indent=2)}\n\nUser question: {message}"}
+                ],
+                max_tokens=500,
                 temperature=0.7,
                 timeout=30
             )
             
-            ai_response = response.output_text
+            ai_response = response.choices[0].message.content
             
             # Store chat session
             chat_session = models.ChatSession(
@@ -343,17 +346,17 @@ class AIService:
             return {"status": "error", "message": "No API key configured"}
         
         try:
-            response = self.client.responses.create(
-                model="gpt-5-mini",
-                input="Hello",
-                max_output_tokens=10,
+            response = self.client.chat.completions.create(
+                model="gpt-5",
+                messages=[{"role": "user", "content": "Hello"}],
+                max_tokens=10,
                 timeout=10
             )
             return {
                 "status": "success", 
                 "message": "API connection successful",
-                "model": "gpt-5-mini",
-                "response": response.output_text
+                "model": "gpt-5",
+                "response": response.choices[0].message.content
             }
         except Exception as e:
             return {
