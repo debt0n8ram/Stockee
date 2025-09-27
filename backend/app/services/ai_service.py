@@ -33,7 +33,7 @@ class AIService:
         # Get portfolio context
         portfolio_context = self._get_portfolio_context(user_id)
         
-        # Prepare context for ChatGPT
+        # Prepare context for GPT-5
         context = f"""
         You are Stockee, an AI assistant for a stock and crypto trading simulator. 
         The user has a portfolio with the following information:
@@ -42,21 +42,20 @@ class AIService:
         
         Please provide helpful insights about their portfolio, market trends, or trading strategies.
         Keep responses concise and actionable.
+        
+        User Question: {message}
         """
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",  # Updated to GPT-4o-mini (latest model)
-                messages=[
-                    {"role": "system", "content": context},
-                    {"role": "user", "content": message}
-                ],
-                max_tokens=500,
+            response = self.client.responses.create(
+                model="gpt-5-mini",
+                input=context,
+                max_output_tokens=500,
                 temperature=0.7,
-                timeout=30  # Add timeout
+                timeout=30
             )
             
-            ai_response = response.choices[0].message.content
+            ai_response = response.output_text
             
             # Store chat session
             chat_session = models.ChatSession(
@@ -344,17 +343,17 @@ class AIService:
             return {"status": "error", "message": "No API key configured"}
         
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": "Hello"}],
-                max_tokens=10,
+            response = self.client.responses.create(
+                model="gpt-5-mini",
+                input="Hello",
+                max_output_tokens=10,
                 timeout=10
             )
             return {
                 "status": "success", 
                 "message": "API connection successful",
-                "model": "gpt-4o-mini",
-                "response": response.choices[0].message.content
+                "model": "gpt-5-mini",
+                "response": response.output_text
             }
         except Exception as e:
             return {
