@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
-from app.db import models, schemas
+from app.db import models
+from app.core.config import settings
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 import logging
@@ -14,6 +15,11 @@ class AIService:
     def __init__(self, db: Session):
         self.db = db
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.model_name = (
+            settings.chatgpt_model
+            or os.getenv("CHATGPT_MODEL")
+            or "gpt-4o-mini"
+        )
         self.client = None
         if self.openai_api_key:
             self.client = OpenAI(api_key=self.openai_api_key)
@@ -33,32 +39,26 @@ class AIService:
         # Get portfolio context
         portfolio_context = self._get_portfolio_context(user_id)
         
-        # Prepare context for GPT-5
-        context = f"""
-        You are Stockee, an AI assistant for a stock and crypto trading simulator. 
-        The user has a portfolio with the following information:
-        
-        {json.dumps(portfolio_context, indent=2)}
-        
-        Please provide helpful insights about their portfolio, market trends, or trading strategies.
-        Keep responses concise and actionable.
-        
-        User Question: {message}
-        """
-        
         try:
             response = self.client.chat.completions.create(
-                model="gpt-5",
+                model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "You are Stockee, an AI assistant for a stock and crypto trading simulator."},
-                    {"role": "user", "content": f"Portfolio context: {json.dumps(portfolio_context, indent=2)}\n\nUser question: {message}"}
+                    {
+                        "role": "system",
+                        "content": "You are Stockee, an AI assistant for a stock and crypto trading simulator."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Portfolio context: {json.dumps(portfolio_context, indent=2)}\n\nUser question: {message}"
+                    }
                 ],
                 max_tokens=500,
-                temperature=0.7,
-                timeout=30
+                temperature=0.7
             )
-            
-            ai_response = response.choices[0].message.content
+
+            ai_response = response.choices[0].message.content if response.choices else None
+            if not ai_response:
+                ai_response = "I'm sorry, I couldn't generate a response right now."
             
             # Store chat session
             chat_session = models.ChatSession(
@@ -347,16 +347,17 @@ class AIService:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-5",
+                model=self.model_name,
                 messages=[{"role": "user", "content": "Hello"}],
-                max_tokens=10,
-                timeout=10
+                max_tokens=20,
+                temperature=0.5
             )
+            sample_response = response.choices[0].message.content if response.choices else "(empty response)"
             return {
-                "status": "success", 
+                "status": "success",
                 "message": "API connection successful",
-                "model": "gpt-5",
-                "response": response.choices[0].message.content
+                "model": self.model_name,
+                "response": sample_response
             }
         except Exception as e:
             return {

@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 
 from app.db.database import get_db
-from app.db import models, schemas
+from app.db import schemas
 from app.services.ai_service import AIService
 
 router = APIRouter()

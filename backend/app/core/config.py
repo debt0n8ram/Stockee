@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     ml_model_retrain_interval: int = 7
     prediction_horizon: int = 30
     sentiment_analysis_enabled: bool = True
-    chatgpt_model: str = "gpt-4"
+    chatgpt_model: str = "gpt-4o-mini"
     
     # API Fallback Configuration
     enable_api_fallback: bool = True
